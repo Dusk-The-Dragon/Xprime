@@ -1,3 +1,5 @@
+Language: X'
+Syntax:
 #this is a comment
 any var #any type
 bool bolean #true or false
@@ -12,26 +14,26 @@ int = 1.1 #int goes to 1
 constant  = 1 #it is annoying that programing languages error if you try to change a const, so nothing happens here
 var += 1 #sets var to var + 1
 
-Accepted variable characters:
+#Accepted variable characters:
 A-Z
 a-z
 0-9
 _
 #these combined into any string ex:
 #_anjkn333 1mkfdk anjknm1_
-Special constants:
+#Special constants:
 /\s/ #space
 /\n/ # new line
 /\t/ # tab
-C-blocks:
+#C-blocks:
 if bool {
-    …
+  …
 }
 while bool {
-    …
+  …
 }
 for (let i = a, i < b, i += s) {
-    …
+  …
 }
 
 
@@ -57,34 +59,36 @@ function indent(code){
     let str = lines.join(`\n`)
     return str
 }
-Function syntax:
+#Function syntax:
 any func = (params) -> {
-    …
+  …
 }
-Class syntax:
+#Class syntax:
 class Class{
-    
+  …
 }
 
-constructor syntax:
-constructor (params) -> {
-   any this.params = params
+#constructor syntax:
+constructor = (params) -> {
+  any this.params = params
 }
-Method syntax:
-_method = (inp) -> {
-    …
+#Method syntax:
+method = (inp) -> {
+  …
 }
-Other:
+#Other:
 return val #returns value
 array.length #length of array
-key #null if no key is pressed, otherwise it is the key that is pressed
+array[i] item at index i of array
+Xprime.key #null if no key is pressed, otherwise it is the key that is pressed
 
-Making a class:
+#Making a class:
 Class example #first is the class, second is name. Kinda like processing
 
-GRAPHICS:
+#GRAPHICS:
+Xprime.createWindow(width,height,align)
 Graphic render = create Graphic(width,height) #creates a graphics window that you can render on
-Renderer renderer = render.createRenderer(mode) #mode can by pixel or vector
+Renderer renderer = render.createRenderer(mode,align) #mode can by pixel or vector
 GRAPHICS vector syntax:
 renderer.fill = fill #string or list of r,g,b. String can be js default colors or none
 renderer.rect(x,y,width,height) #rectangle
@@ -100,8 +104,39 @@ GRAPHICS pixel:
 arr px = renderer.px #gets the pixels currently on render. Creates array:
 #px = new array(‘any’, 3)
 #px.map(()[all] -> new array(‘uint8’,1))
+MAIN LOOP:
+any main = () -> {
+  #code
+  Xprime.loop(main)
+}
 
+main()
 
+#Ex program:
+bool keyPressed = (searchKey) -> {
+  return Xprime.key == searchKey
+}
 
+class Player{
+  constructor = (x,y) -> {
+    this.x = x
+    this.y = y
+    this.speed = 5
+  }
+  move(){
+    this.x += this.speed * ((keyPressed('w') || keyPressed('up')) - (keyPressed('s') || keyPressed('down')))
+    this.y += this.speed * ((keyPressed('d') || keyPressed('right')) - (keyPressed('a') || keyPressed('left')))
+  }
+}
 
-
+Xprime.createWindow(400,400)
+Graphic world = create Graphic(400,400,'center')
+Player player = create Player(0,0)
+Renderer draw = world.createRenderer('vector','center')
+any main = () -> {
+  Player.move
+  draw.fillRect(player.x,player.y,20,20)
+  player.move()
+  Xprime.loop(main)
+}
+main()
