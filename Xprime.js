@@ -1,3 +1,4 @@
+import helpers from "./helpers"
 function lex(input) {
   let identifierStart = /[a-zA-Z_]/;
   let identifierPart = /[a-zA-Z0-9_]/;
@@ -27,7 +28,7 @@ function lex(input) {
   let col = 0;
   let pos = 0;
   function addToken(type, val) {
-    tokens.push({ line, col, type, val });
+    tokens.push({ type, val });
   }
   while (pos < input.length) {
     let char = input[pos];
@@ -122,5 +123,7 @@ class XprimeParser{
   pop(){
     this.tokens.shift()
   }
-  
+  parenthesize(){
+		const token
+	}
 }
