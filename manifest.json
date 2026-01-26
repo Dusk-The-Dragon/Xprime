@@ -1,0 +1,13 @@
+{
+  "name": "XPrime Compiler",
+  "start_url": "index.html",
+  "display": "standalone",
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/x-prime": [".xp"]
+      }
+    }
+  ]
+}
