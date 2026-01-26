@@ -13,7 +13,12 @@ var = 1 #set var
 int = 1.1 #int goes to 1
 constant  = 1 #it is annoying that programing languages error if you try to change a const, so nothing happens here
 var += 1 #sets var to var + 1
-
+#operators:
+a + b
+a - b
+a * b
+a / b
+a ** b
 #Accepted variable characters:
 A-Z
 a-z
