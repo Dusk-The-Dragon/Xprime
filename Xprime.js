@@ -112,5 +112,15 @@ function lex(input) {
   return tokens;
 }
 
-class XPrimeParser{
+class XprimeParser{
+  constructor(tokens){
+    this.tokens = tokens
+  }
+  peek(){
+    return this.tokens[0]
+  }
+  pop(){
+    this.tokens.shift()
+  }
   
+}
