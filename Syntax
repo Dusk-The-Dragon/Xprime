@@ -4,7 +4,7 @@ Syntax:
 any var #any type
 bool bolean #true or false
 str string #string
-arr array = create array ((str)type,n, length) #an n-dimesional array with type type (int,str,bool,static,int,uint8,uint16)
+arr array = create array ((str)type, length) #an n-dimesional array with type type (int,str,bool,static,int,uint8,uint16)
 static constant #constant. Can’t change. Will error if undefined
 int whole #if you try to set it to an non-integer value, it sets to that value rounded down
 uint8 Nonsigned8 # unsigned 8 bit integer
