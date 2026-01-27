@@ -1,0 +1,27 @@
+bool keyPressed = (searchKey) -> {
+  return Xprime.key == searchKey
+}
+
+class Player{
+  constructor = (x,y) -> {
+    this.x = x
+    this.y = y
+    this.speed = 5
+  }
+  move(){
+    this.x += this.speed * ((keyPressed('w') || keyPressed('up')) - (keyPressed('s') || keyPressed('down')))
+    this.y += this.speed * ((keyPressed('d') || keyPressed('right')) - (keyPressed('a') || keyPressed('left')))
+  }
+}
+
+Xprime.createWindow(400,400)
+Graphic world = create Graphic(400,400,'center')
+Player player = create Player(0,0)
+Renderer draw = world.createRenderer('vector','center')
+any main = () -> {
+  Player.move
+  draw.fillRect(player.x,player.y,20,20)
+  player.move()
+  Xprime.loop(main)
+}
+main()
