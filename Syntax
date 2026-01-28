@@ -139,7 +139,6 @@ Graphic world = create Graphic(400,400,'center')
 Player player = create Player(0,0)
 Renderer draw = world.createRenderer('vector','center')
 any main = () -> {
-  Player.move
   draw.fillRect(player.x,player.y,20,20)
   player.move()
   Xprime.loop(main)
