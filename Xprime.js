@@ -117,14 +117,30 @@ function lex(input) {
 class XprimeParser{
   constructor(tokens){
     this.tokens = tokens
+		this.g = 0
+		this.cursor = 0
   }
   peek(){
-    return this.tokens[0]
+    return this.tokens[this.g]
   }
   pop(){
-    this.tokens.shift()
+		this.g++
   }
-  parenthesize(){
-		const token
+  peekCursor(){
+		return this.tokens[this.cursor+this.g]
+	}
+  parseFunction(){
+		this.cursor++
+		if(this.peekCursor().type !== 'Identifier') return
+		this.cursor++
+		if(this.peekCursor().val !== '(') return
+		let params = []
+		let parenFound = 1
+		while(parenFound > 0){
+			this.cursor++
+			if(this.peekCursor().val === '(') parenFound++
+			if(this.peekCursor().val === ')') parenFound--
+			if(this.peekCursor().type === 'Identifier') params.push(this.peekCursor().val)
+		}
 	}
 }
