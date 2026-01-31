@@ -3,6 +3,7 @@ class XPrimeParser(){
 		this.str = str
 		this.t = []
 		this.g = 0
+		this.b = []
 	}
 	lex(input) {
 	  let identifierStart = /[a-zA-Z_]/;
@@ -124,4 +125,9 @@ class XPrimeParser(){
 		this.g++
 		return this.t[this.g]
 	}
+	parse(){
+		this.t = this.lex(this.str)
+		this.b = this.createBody()
+	}
+	
 }
