@@ -1,4 +1,4 @@
-class XPrimeParser(){
+class XPrimeParser{
 	constructor(str){
 		this.str = str
 		this.t = []
@@ -34,7 +34,7 @@ class XPrimeParser(){
 	  let col = 0;
 	  let pos = 0;
 	  function addToken(type, val) {
-		tokens.push({ type, val });
+		tokens.push({ type, val,line,col });
 	  }
 	  while (pos < input.length) {
 		let char = input[pos];
@@ -129,5 +129,7 @@ class XPrimeParser(){
 		this.t = this.lex(this.str)
 		this.b = this.createBody()
 	}
-	
+	createBody(){
+
+  }
 }
