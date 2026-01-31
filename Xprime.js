@@ -3,7 +3,15 @@ class XPrimeParser{
 		this.str = str
 		this.t = []
 		this.g = 0
-		this.b = []
+		this.b = [{type: 'Root', name: 'Program', body: []}]
+	}
+	parseLiteral(str){
+		let string = /[\'\"\`]/
+		if(str === 'true') return true
+		if (str === 'false') return false
+		if(string.test(str[0]) && string.test(str[str.length - 1])) return str.slice(1,-1)
+		if(parseFloat(str)) return new Number(str)
+		return str
 	}
 	lex(input) {
 	  let identifierStart = /[a-zA-Z_]/;
@@ -34,7 +42,7 @@ class XPrimeParser{
 	  let col = 0;
 	  let pos = 0;
 	  function addToken(type, val) {
-		tokens.push({ type, val,line,col });
+		tokens.push({ type, val: this.parseLiteral(val),line,col });
 	  }
 	  while (pos < input.length) {
 		let char = input[pos];
@@ -133,3 +141,32 @@ class XPrimeParser{
 
   }
 }
+const code = 
+`bool keyPressed = (searchKey) -> {
+  return Xprime.key == searchKey
+}
+
+class Player{
+  constructor = (x,y) -> {
+    this.x = x
+    this.y = y
+    this.speed = 5
+  }
+  move(){
+    this.x += this.speed * ((keyPressed('w') || keyPressed('up')) - (keyPressed('s') || keyPressed('down')))
+    this.y += this.speed * ((keyPressed('d') || keyPressed('right')) - (keyPressed('a') || keyPressed('left')))
+  }
+}
+
+Xprime.createWindow(400,400)
+Graphic world = create Graphic(400,400,'center')
+Player player = create Player(0,0)
+Renderer draw = world.createRenderer('vector','center')
+any main = () -> {
+  draw.fillRect(player.x,player.y,20,20)
+  player.move()
+  Xprime.loop(main)
+}
+main()`
+const X = new XPrimeParser(code)
+console.log(X.parseLiteral("\"explosion\""))
