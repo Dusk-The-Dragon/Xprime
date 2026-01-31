@@ -1,0 +1,36 @@
+TYPE ::= "any"
+       | "bool"
+       | "str"
+       | "int"
+       | "uint8"
+       | "uint16"
+       | "static"
+       | "arr"
+       | "func"        (* function with no return *)
+       | "build"       (* constructor *)
+       | IDENTIFIER    (* class types *)
+FUNCTION_DECL ::=
+    TYPE IDENTIFIER "=" "(" [ PARAM_LIST ] ")" "->" BLOCK
+FUNC_DECL ::=
+    "func" IDENTIFIER "=" "(" [ PARAM_LIST ] ")" "->" BLOCK
+BUILD_DECL ::=
+    "build" "constructor" "=" "(" [ PARAM_LIST ] ")" "->" BLOCK
+CLASS_BODY_ELEMENT ::=
+      VARIABLE_DECL
+    | FUNCTION_DECL
+    | FUNC_DECL
+    | BUILD_DECL
+CLASS_DECL ::= "class" IDENTIFIER "{" { CLASS_BODY_ELEMENT } "}"
+STATEMENT ::=
+      COMMENT
+    | VARIABLE_DECL
+    | ASSIGNMENT
+    | AUG_ASSIGNMENT
+    | IF_STATEMENT
+    | WHILE_STATEMENT
+    | FOR_STATEMENT
+    | FUNCTION_DECL
+    | FUNC_DECL
+    | CLASS_DECL
+    | RETURN_STATEMENT
+    | EXPRESSION_STATEMENT
