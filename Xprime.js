@@ -1,5 +1,3 @@
-//Xprime.js
-import helpers from "./helpers"
 function lex(input) {
   let identifierStart = /[a-zA-Z_]/;
   let identifierPart = /[a-zA-Z0-9_]/;
