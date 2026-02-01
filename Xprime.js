@@ -3,15 +3,25 @@ let TT_K = 'Keyword';
 let TT_I = 'Identifier';
 let TT_O = 'Operator';
 let TT_P = 'Punctuation';
-let TT_EOF = 'End'
-let TT_BLANK = ''
+let TT_EOF = 'End';
+let TT_BLANK = '';
 class XPrimeParser {
   constructor(str) {
     this.str = str;
     this.t = [];
     this.g = 0;
     this.b = [{ type: 'Root', name: 'Program', body: [] }];
+		this.p = {
+			'=': 0, '+=': 0, '-=': 0, '*=': 0, '/=': 0, '^=': 0, 
+			'->': 1,
+			'>=': 2, '<=': 2, '==': 2, '>': 2, '<': 2, '&&': 2, '||': 2, 
+			'*': 3, '/': 3, '%': 3, 
+			'^': 4, 
+		}
   }
+	precedense(token){
+		return this.p[token.val]
+	}
   parseLiteral(str) {
     let string = /[\'\"\`]/;
     if (str === 'true') return true;
@@ -49,8 +59,8 @@ class XPrimeParser {
       '_repr',
       '_pow',
     ];
-    let opperators = ['+', '-', '*', '/', '&&', '||', '=', '>', '<', '%'];
-    let compOpp = ['++', '--', '+=', '-=', '*=', '/=', '->', '>=', '<=', '**'];
+    let opperators = ['+', '-', '*', '/', '&&', '||', '=', '>', '<', '%', '^'];
+    let compOpp = ['++', '--', '+=', '-=', '*=', '/=', '^=', '->', '>=', '<=', '=='];
     let tokens = [];
     let line = 0;
     let col = 0;
@@ -138,7 +148,7 @@ class XPrimeParser {
       }
       throw new Error(`Unidentified character ${char} at ${line} : ${col}`);
     }
-		addToken(TT_EOF)
+    addToken(TT_EOF);
     return tokens;
   }
   peek(n = 1) {
@@ -150,11 +160,29 @@ class XPrimeParser {
   }
   parse() {
     this.t = this.lex(this.str);
-		this.g = 0
+    this.g = 0;
     let scope = 1;
-		while (this.peek().type !== TT_EOF){
-			this.consume() //simple placeholder loop
+    let ind = [0]; //now we can find the exact node we are connecting to by itterating down ind. a simple findNode() function would be;
+		function findParentNode(){
+			let curr = this.b
+			let prvCurr = curr
+			for (let i in ind){
+				prvCurr = curr
+				if (!(curr.b)){
+					throw new Error('Expected something with a body')
+				}
+				curr = curr.b[ind[i]]
+			}
+			return prvCurr
 		}
+
+    while (this.peek().type !== TT_EOF) {
+			let tok = this.peek(0)
+			if (tok.type === TT_L){
+				
+			}
+      this.consume(); //simple placeholder loop
+    }
   }
 }
 const code = `bool keyPressed = (searchKey) -> {
