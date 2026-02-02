@@ -1,22 +1,42 @@
-let TT_L = 'Literal';
+let TT_NL = 'NumLiteral';
+let TT_BL = 'BoolLiteral';
+let TT_SL = 'StrLiteral';
 let TT_K = 'Keyword';
 let TT_I = 'Identifier';
 let TT_O = 'Operator';
 let TT_P = 'Punctuation';
 let TT_EOF = 'End';
 let TT_BLANK = '';
+let TT_NEWLINE = 'NewLine'
+function repeat(amount,func){
+	for (let i = 0; i < amount; i++){
+		func()
+	}
+}
 class XPrimeParser {
   constructor(str) {
     this.str = str;
     this.t = [];
     this.g = 0;
-    this.b = [{ type: 'Root', name: 'Program', body: [] }];
+    this.b = { type: 'Root', name: 'Program', body: [] };
+		this.asTokens = [
+			'any',
+      'int',
+      'float',
+      'str',
+      'arr',
+      'uint8',
+      'uint16',
+      'bool',
+      'static',
+		]
 		this.p = {
 			'=': 0, '+=': 0, '-=': 0, '*=': 0, '/=': 0, '^=': 0, 
 			'->': 1,
 			'>=': 2, '<=': 2, '==': 2, '>': 2, '<': 2, '&&': 2, '||': 2, 
-			'*': 3, '/': 3, '%': 3, 
-			'^': 4, 
+			'+':3,'-':3,
+			'*': 4, '/': 4, '%': 4, 
+			'^': 5, 
 		}
   }
 	precedense(token){
@@ -28,7 +48,7 @@ class XPrimeParser {
     if (str === 'false') return false;
     if (string.test(str[0]) && string.test(str[str.length - 1]))
       return str.slice(1, -1);
-    if (parseFloat(str)) return new Number(str);
+    if (!isNaN(parseFloat(str))) return new Number(str);
     return str;
   }
   lex(input) {
@@ -40,15 +60,7 @@ class XPrimeParser {
     let boolLiteral = /^(true|false)$/;
     let string = ['"', "'", '`'];
     let keyWords = [
-      'any',
-      'int',
-      'float',
-      'str',
-      'arr',
-      'uint8',
-      'uint16',
-      'bool',
-      'static',
+      ...this.asTokens,
       'if',
       'for',
       'while',
@@ -65,13 +77,16 @@ class XPrimeParser {
     let line = 0;
     let col = 0;
     let pos = 0;
-    function addToken(type, val = TT_BLANK) {
-      tokens.push({ type, val: this.parseLiteral(val), line, col });
+		let scope = 0;
+    const addToken = (type, val = TT_BLANK) => {
+      tokens.push({ type, val: TT_BLANK, line, col, scope });
+			tokens[tokens.length-1].val = this.parseLiteral(val)
     }
     while (pos < input.length) {
       let char = input[pos];
       if (whitespace.test(char)) {
         if (char == `\n`) {
+					addToken(TT_NEWLINE,`\n`)
           col = 0;
           line++;
         } else {
@@ -97,7 +112,7 @@ class XPrimeParser {
         if (keyWords.includes(word)) {
           addToken(TT_K, word);
         } else if (boolLiteral.test(word)) {
-          addToken(TT_L, word);
+          addToken(TT_BL, word);
         } else {
           addToken(TT_I, word);
         }
@@ -110,7 +125,7 @@ class XPrimeParser {
           col++;
         }
         let foundNumber = input.slice(start, pos);
-        addToken(TT_L, foundNumber);
+        addToken(TT_NL, foundNumber);
         continue;
       }
       const allOps = [...compOpp, ...opperators].sort(
@@ -130,6 +145,8 @@ class XPrimeParser {
         addToken(TT_P, char);
         pos++;
         col++;
+				if(char === '{') scope++
+				if(char === '}') scope--
         continue;
       }
       if (string.includes(char)) {
@@ -141,7 +158,7 @@ class XPrimeParser {
           pos++;
           col++;
         }
-        addToken(TT_L, input.slice(start, pos));
+        addToken(TT_SL, input.slice(start, pos));
         pos++;
         col++;
         continue;
@@ -149,43 +166,137 @@ class XPrimeParser {
       throw new Error(`Unidentified character ${char} at ${line} : ${col}`);
     }
     addToken(TT_EOF);
+		let typeStack = []
+		let classToggle = false
+		for(let i = 0; i < tokens.length; i++){
+			if(classToggle){
+				classToggle = false
+				continue
+			}
+			if(tokens[i].val === 'class'){
+				typeStack.push(tokens[i+1].val)
+				classToggle = true
+				continue
+			}
+		}
+		for(let i = 0; i < tokens.length; i++){
+			if(typeStack.includes(tokens[i].val)){
+				tokens[i].type = TT_K
+			}
+		}
     return tokens;
   }
   peek(n = 1) {
+		if(this.g + n >= this.t.length) return TT_BLANK
     return this.t[this.g + n];
   }
   consume() {
     this.g++;
     return this.t[this.g];
   }
-  parse() {
-    this.t = this.lex(this.str);
-    this.g = 0;
-    let scope = 1;
-    let ind = [0]; //now we can find the exact node we are connecting to by itterating down ind. a simple findNode() function would be;
-		function findParentNode(){
-			let curr = this.b
-			let prvCurr = curr
-			for (let i in ind){
-				prvCurr = curr
-				if (!(curr.b)){
-					throw new Error('Expected something with a body')
-				}
-				curr = curr.b[ind[i]]
-			}
-			return prvCurr
+	regurgitate(n = 1) {
+		this.g -= n;
+		if (this.g < 0) this.g = 0;
+	}
+	parsePrimary(){
+		return this.consume()
+	}
+	semAnal(tokens){
+		let varstack = []
+		let scope = 0
+		const same = (tok1,tok2) => {
+			return (
+				tok1.type == tok2.type &&
+				tok1.name == tok2.name &&
+				tok1.val == tok2.val
+			)
 		}
-
-    while (this.peek().type !== TT_EOF) {
-			let tok = this.peek(0)
-			if (tok.type === TT_L){
-				
+		const parseDecl = (line) => {
+			let i = 0
+			while (i < tokens.length && tokens[i].line !== line) i++
+			let tokType = tokens[i]
+			let type = tokType.val
+			let tokenScope = tokens[i].scope
+			scope = tokenScope
+			if (!this.asTokens.includes(type)) return
+			i++
+			let name = tokens[i].val
+			if (tokens[i].type !== TT_I) return
+			i++
+			let val = tokens[i].val
+			if (!this.isValue(tokens[i].type)) return
+			if (varstack.some((item) => same(item, {
+				type,
+				name,
+				val,
+				scope: tokenScope,
+			}))) throw new Error(`Redeclaration error. ${name} is already defined`)
+			if (!varstack.some((v) => v.name === val) && tokens[i].type === TT_I) throw new Error(`${name} is not defined. line ${tokType.line} col ${tokType.col}`)
+			varstack.push({
+				type,
+				name,
+				val,
+				scope: tokenScope
+			})
+		}
+		let lastTok = tokens[tokens.length - 1]
+		let lastLine = lastTok.line
+		for (let line = 0; line <= lastLine; line++){
+			parseDecl(line)
+			let tmp = []
+			for(let v of varstack){
+				if(v.scope <= scope){
+					tmp.push(v)
+				}
 			}
-      this.consume(); //simple placeholder loop
-    }
-  }
+			varstack = tmp
+		}
+	}
+	isValue(val = null){
+		let tokType = this.peek(0).type
+		if(val !== null){
+			tokType = val
+		}
+		return (
+			tokType === TT_BL ||
+			tokType === TT_SL ||
+			tokType === TT_NL ||
+			tokType === TT_I
+		)
+	}
+	
+	parsePow(){
+		let tok = this.parsePrimary()
+		if(this.isValue(tok)){
+			if(this.peek(1).val === '^'){
+				let expectOpp = {
+					type: 'Pow',
+					left: tok,
+					right: 0
+				}
+				this.consume()
+				let tok2 = this.parsePrimary()
+				if(this.isVal(tok2)){
+					expectOpp.right = tok2
+					return expectOpp
+				}
+			}
+		}
+		return false
+	}
+	parseMul(){}
+	parseDiv(){}
+	parseAdd(){}
+	parseSub(){}
+	parseMod(){}
+	parseAssignment(){}
+	parseBoolOpp(){}
+	parseFunction(){
+		let tok = this.parsePrimary()
+	}
+	parseExpression(){}
 }
-const code = `bool keyPressed = (searchKey) -> {
+let code = `bool keyPressed = (searchKey) -> {
   return Xprime.key == searchKey
 }
 
@@ -211,5 +322,6 @@ any main = () -> {
   Xprime.loop(main)
 }
 main()`;
+code = 'true true'
 const X = new XPrimeParser(code);
 console.log(X.parseLiteral('"explosion"'));
